@@ -4,14 +4,14 @@ import certifi
 from dotenv import load_dotenv
 from confluent_kafka import Consumer
 
-# Carga las variables del archivo .env (contraseña y group.id)
+# cargo las variables del .env
 load_dotenv()
 
 TOPIC = "etl.records"
 
 
 def crear_consumer():
-    """Crea el consumer """
+    """armo el consumer con los datos de conexión del broker"""
     conf = {
         "bootstrap.servers": "kafka-classroom-2026.westus.cloudapp.azure.com:9092",
         "security.protocol": "SASL_SSL",
@@ -20,7 +20,7 @@ def crear_consumer():
         "sasl.password": os.getenv("KAFKA_PASSWORD"),
         "ssl.ca.location": certifi.where(),
         "group.id": os.getenv("KAFKA_GROUP_ID"),
-        "auto.offset.reset": "earliest",   # empezar desde el primer mensaje del topic
+        "auto.offset.reset": "earliest",   # arranco desde el primer mensaje del topic
         "enable.auto.commit": False,
     }
     return Consumer(conf)
@@ -28,8 +28,8 @@ def crear_consumer():
 
 def consumir_topic(topic=TOPIC, max_vacios=5, timeout=5.0):
     """
-    Lee todos los mensajes del topic y los acumula en una lista (estado en memoria).
-    Se detiene cuando pasan `max_vacios` intentos seguidos sin recibir mensajes.
+    leo todos los mensajes del topic y los voy guardando en una lista.
+    paro cuando pasan varios intentos seguidos sin recibir nada
     """
     consumer = crear_consumer()
     consumer.subscribe([topic])
@@ -50,7 +50,7 @@ def consumir_topic(topic=TOPIC, max_vacios=5, timeout=5.0):
                 vacios += 1
                 continue
 
-            vacios = 0               # llegó un mensaje: reiniciamos el contador
+            vacios = 0               # llegó un mensaje, reinicio el contador
 
             mensajes.append({
                 "partition": msg.partition(),
@@ -60,7 +60,7 @@ def consumir_topic(topic=TOPIC, max_vacios=5, timeout=5.0):
                 "value": json.loads(msg.value().decode("utf-8")),
             })
     finally:
-        consumer.close()             # siempre cerramos la conexion
+        consumer.close()             # cierro siempre la conexión
 
     return mensajes
 

@@ -8,8 +8,8 @@ RUTA_CACHE = os.path.join("data", "raw_messages.json")
 
 def obtener_mensajes(forzar_consumo=False):
     """
-    Si ya existe una copia local de los mensajes, la carga.
-    Si no existe (o forzar_consumo=True), consume Kafka y la crea.
+    si ya hay copia local la cargo, si no consumo Kafka y la creo.
+    con forzar_consumo=True vuelvo a leer Kafka
     """
     if os.path.exists(RUTA_CACHE) and not forzar_consumo:
         print(f"Cargando mensajes desde la copia local: {RUTA_CACHE}")
@@ -27,8 +27,8 @@ def obtener_mensajes(forzar_consumo=False):
 
 def construir_estado(mensajes):
     """
-    Estado en memoria: diccionario {record_id: registro}.
-    Usar record_id como clave evita duplicados si Kafka entrega un mensaje repetido.
+    estado en memoria como diccionario con record_id de llave,
+    así un mensaje repetido no se duplica
     """
     estado = {}
     duplicados = 0
@@ -55,14 +55,11 @@ def construir_estado(mensajes):
 
 
 def estado_a_dataframes(estado):
-    """
-    Convierte el estado en un diccionario {año: DataFrame}.
-    Cada año queda separado porque sus columnas pueden ser diferentes.
-    """
+    """armo un dataframe por año, porque las columnas cambian de un año a otro"""
     filas_por_anio = {}
 
     for record_id, reg in estado.items():
-        fila = dict(reg["data"])                      # columnas originales del CSV
+        fila = dict(reg["data"])                      # columnas originales del csv
         fila["year"] = reg["metadata"]["year"]
         fila["source_file"] = reg["metadata"]["source_file"]
         fila["record_id"] = record_id
@@ -72,7 +69,7 @@ def estado_a_dataframes(estado):
 
 
 def verificar_estado(mensajes, estado, duplicados, dfs):
-    """Imprime la verificación del dataset resultante."""
+    """imprimo la verificación del dataset armado"""
     print("\n===== VERIFICACIÓN DEL ESTADO =====")
     print("Mensajes consumidos:", len(mensajes))
     print("Registros únicos en el estado:", len(estado))

@@ -1,6 +1,6 @@
 import pandas as pd
 
-# Nombres originales (de cualquier año) -> nombre estándar
+# nombre original de cada año -> nombre estándar
 MAPEO = {
     # 2015 y 2016
     "Country": "country",
@@ -26,15 +26,15 @@ MAPEO = {
     "Perceptions of corruption": "corruption_perception",
 }
 
-# Columnas que existen en los 5 años una vez armonizados los nombres
+# columnas que existen en los 5 años después de armonizar los nombres
 COLUMNAS_COMUNES = [
     "country", "happiness_score", "gdp_per_capita", "social_support",
     "life_expectancy", "freedom", "generosity", "corruption_perception",
 ]
 
-# Nombres de país inconsistentes entre años -> nombre único.
-# La etiqueta elegida es solo un identificador de la misma unidad de observación;
-# no implica una posición sobre su estatus político.
+# países escritos distinto según el año -> un solo nombre.
+# la etiqueta solo sirve para reconocer la misma unidad entre años,
+# no es una postura política
 PAISES = {
     "Hong Kong S.A.R., China": "Hong Kong",
     "Taiwan Province of China": "Taiwan",
@@ -46,7 +46,7 @@ PAISES = {
 
 
 def armonizar_anio(df):
-    """Renombra columnas al estándar y se queda solo con las comunes."""
+    """renombro al estándar y dejo solo las columnas comunes"""
     df = df.rename(columns=MAPEO)
     descartadas = [
         c for c in df.columns
@@ -54,7 +54,7 @@ def armonizar_anio(df):
     ]
     df = df[COLUMNAS_COMUNES + ["year", "record_id"]].copy()
 
-    # Formatos: país como texto limpio y unificado, resto numérico
+    # país como texto limpio y unificado, el resto numérico
     df["country"] = df["country"].astype(str).str.strip().replace(PAISES)
     for col in COLUMNAS_COMUNES[1:]:
         df[col] = pd.to_numeric(df[col], errors="coerce")
@@ -63,7 +63,7 @@ def armonizar_anio(df):
 
 
 def unir_anios(dfs):
-    """Armoniza cada año y los apila en un solo DataFrame."""
+    """armonizo cada año y los apilo en un solo dataframe"""
     partes, descartadas_por_anio = [], {}
     for anio, df in dfs.items():
         df_arm, descartadas = armonizar_anio(df)
