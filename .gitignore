@@ -1,0 +1,15 @@
+# Secretos
+.env
+
+# Entorno virtual
+venv/
+
+# Python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Datos y base de datos generados
+data/*.db
+data/*.csv
+data/*.json
